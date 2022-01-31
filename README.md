@@ -1,6 +1,4 @@
-# simple_and_compound
-
-Compound topology uncovers complex structure of species interaction networks <br>
+# Compound topology uncovers complex structure of species interaction networks
 Rafael B. P. Pinheiro, Gabriel M. F. Felix and Thomas M. Lewinsohn
 
 In this repository we share code for the entire set of analyses performed in the study. See bellow a brief description of each script file:
