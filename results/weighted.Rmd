@@ -1,0 +1,398 @@
+---
+title: "DETAILED REPORT OF WEIGHTED ANALYSES"
+author: "Pinheiro R.B.P., Felix G.M.F., and Lewinsohn T.M."
+date: "February 2022"
+output: word_document
+toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(fig.height = 4, fig.width = 8)
+knitr::opts_knit$set(root.dir = "~/Biologia/Projetos/postdoc_unicamp/postdoc 1/compound_topologies")
+```
+
+```{r include=FALSE}
+library(FSA)
+library(stringr)
+options(digits = 3)
+```
+
+```{r include=FALSE}
+## Results to be analyzed
+# If results are not aggregate, define CODES and source line 31 (remove the #).
+# If results are already ready, just define CODES for an existing output.
+CODES=c("set1W")
+NAME_OUTPUT=paste(CODES,collapse = "_")#(NAME_OUTPUT in aggregation_results.R)
+
+# Minimum size in each dimension
+MIN=0
+#
+#source("analysis/aggregation_results_W.R")
+# Colors
+COLORS1=c(1,"#1E46D9","#F80631","#00D400","#FFA100","#7A05C5")
+COLORS2=c("#AF2E45","#BA9A31","#353082","#4EA02A")
+# binary result for comparison
+BINCODES=c("set1","set2","set3")
+BIN_NAME_OUTPUT=paste(BINCODES,collapse = "_")
+```
+
+```{r results="hide"}
+
+TABLE_RESULTS=read.table(paste("analysis/results/",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+X=read.table(paste("analysis/results/","NETDATA_",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+# File IDs = list of network ids to be analyzed
+ids=X$ID
+L=length(ids)
+# minimum size in each dimension
+min_dim=TABLE_RESULTS$rows>=MIN&TABLE_RESULTS$cols>=MIN
+
+```
+# 1. Dataset
+
+We searched for weighted versions of the networks included in the binary dataset (see Appendix S1) in two online databases: the Web-of-life (http://www.web-of-life.es/) and the Interaction Web Database (http://www.ecologia.ib.usp.br/iwdb/), and in a pool of weighted host-parasite networks (Hadfield et al., 2009) directly provided by Boris Krasnov.
+
+```{r}
+print(paste("CODES:", paste(CODES, collapse = " ")))
+knitr::kable(X[,c(1,2,3,7,8,9)], format = "simple")
+```
+
+```{r}
+print(paste("Weighted networks in the dataset:", L))
+barplot(table(TABLE_RESULTS$interaction_type), col=COLORS2[c(1,3,4)],names.arg = c("Seed dispersion","Host-Parasite","Pollination"),space = .5,cex.names = .9, main= "Networks by kind of interaction")
+text(y=4, x=c(1,2.5,4,5.5),table(TABLE_RESULTS$interaction_type), cex=1.5, col="white")
+```
+
+```{r, include=F}
+#loading binary versions of the networks
+BIN_NETS=list()
+for (i in 1:L){
+  if(str_detect(X$Binary_file[i],pattern = ".txt")){ #txt files
+    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""))}
+  if(str_detect(X$Binary_file[i],pattern = ".csv")){ #csv files
+    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""), sep = ",")}
+  #empty rows and columns
+  Rs=rowSums(BIN_NETS[[i]])
+  Cs=colSums(BIN_NETS[[i]])
+  if(any(Rs==0)){print(paste("binary",ids[[i]], "had", sum(Rs==0),"empty rows"))}
+  if(any(Cs==0)){print(paste("binary",ids[[i]], "had", sum(Cs==0),"empty columns"))}
+  BIN_NETS[[i]]=BIN_NETS[[i]][Rs>0,Cs>0]
+  #binary matrix
+  if(any(BIN_NETS[[ids[i]]]!=0&BIN_NETS[[ids[i]]]!=1)){
+    print(paste("binary version of",ids[i], "was not really binary"))
+    BIN_NETS[[ids[i]]][BIN_NETS[[ids[i]]]>0]=1
+  }
+}
+```
+
+## 1.1. Warnings (matrix loadings) 
+
+Warnings for missing rows and columns in the weighted matrix.
+
+Inconsistencies for the number of rows and columns between the binary and weighted matrices.
+
+Inconsistencies within 2 decimal places for connectance.
+
+```{r}
+NETS=list()
+for (i in 1:L){
+  if(str_detect(X$Weighted_file[i],pattern = ".txt")){ #txt files
+    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""))}
+  if(str_detect(X$Weighted_file[i],pattern = ".csv")){ #csv files
+    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""), sep = ",")}
+  #empty rows and columns
+  Rs=rowSums(NETS[[i]])
+  Cs=colSums(NETS[[i]])
+  if(any(Rs==0)){print(paste("weighted",ids[[i]], "had", sum(Rs==0),"empty rows"))}
+  if(any(Cs==0)){print(paste("weighted",ids[[i]], "had", sum(Cs==0),"empty columns"))}
+  NETS[[i]]=NETS[[i]][Rs>0,Cs>0]
+  #comparison with binary matrix
+  bin2_NET= NETS[[i]]
+  bin2_NET[bin2_NET>0]=1
+  if((dim(bin2_NET)[1]>dim(bin2_NET)[2])+(dim(BIN_NETS[[i]])[1]>dim(BIN_NETS[[i]])[2])==1){#transpose networks (rows/columns)
+    bin2_NET=t(bin2_NET)
+    NETS[[i]]=t(NETS[[i]])
+  } 
+  if(nrow(BIN_NETS[[i]])!=nrow(NETS[[i]])){ # difference in rows
+    print(paste(ids[[i]], "  Rows in binary matrix:",nrow(BIN_NETS[[i]])," Rows in weighted matrix: ",nrow(NETS[[i]])))}
+  if(ncol(BIN_NETS[[i]])!=ncol(NETS[[i]])){ # difference in cols
+    print(paste(ids[[i]], "  Cols in binary matrix:",ncol(BIN_NETS[[i]])," Cols in weighted matrix: ",ncol(NETS[[i]])))}
+  conn_BIN_NET=round(sum(BIN_NETS[[i]])/(nrow(BIN_NETS[[i]])*ncol(BIN_NETS[[i]])),digits = 2)
+  conn_bin2_NET=round(sum(bin2_NET)/(nrow(bin2_NET)*ncol(bin2_NET)),digits = 2)
+  if(conn_BIN_NET!=conn_bin2_NET){ # difference in connectance 
+    print(paste(ids[[i]],"  Connectance in binary matrix:",conn_BIN_NET,"Connectance in weighted matrix:",conn_bin2_NET))}
+}
+```
+
+Networks with non integer cell values ( = host-endoparasite networks with prevalence) were rounded to 1 decimal place and then multiplied by 10.
+
+```{r}
+net_non_integer=logical()
+for (i in 1:L){ 
+  net_non_integer[i]=any(NETS[[i]]%%1!=0)
+  if(net_non_integer[i]){
+    print(paste(ids[[i]], "has non integer values"))
+    print(paste(ids[[i]], "rounded with 1 decimal place and multiplied by 10"))
+    print("Values < 0.1 converted to 0.1 before this procedure")
+    NETS[[i]][NETS[[i]]<0.1&NETS[[i]]>0]=0.1
+    NETS[[i]]=round(NETS[[i]],digits = 1)*10
+  }
+}
+```
+
+# 2. Binary vs. weighted indices (nestedness and modularity)
+
+```{r, include=F}
+BIN_TABLE_RESULTS=read.table(paste("analysis/results/",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
+BIN_X=read.table(paste("analysis/results/","NETDATA_",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
+BIN_TABLE_RESULTS=BIN_TABLE_RESULTS[match(rownames(TABLE_RESULTS),rownames(BIN_TABLE_RESULTS)),]
+BIN_X=BIN_X[match(rownames(TABLE_RESULTS),rownames(BIN_X)),]
+```
+
+## 2.1. Correlation between binary nestedness (NODF) and weighted nestedness (WNODA): 
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(TABLE_RESULTS$WNODA~BIN_TABLE_RESULTS$NODF, pch=16, col=COLORS2[-2][as.factor(TABLE_RESULTS$interaction_type)], ylab="weighted nestedness", xlab="binary nestedness", xlim=c(0,100), ylim=c(0,100))
+curve(1*x,add=T, lty=2)
+legend(x =0 ,y=100, legend=c("Seed dispersion","Host-Parasite","Pollination"),col=COLORS2[-2],pch=16)
+cor.test(TABLE_RESULTS$WNODA,BIN_TABLE_RESULTS$NODF,method=c("spearman"))
+```
+The dashed line represents equal values of weighted and binary nestedness. Most of the points (66 out of 68) are bellow the line, which means that networks are more nested in their binary than in their weighted structures.
+
+The correlation between binary and weighted nestedness is very high.
+
+## 2.2. Correlation between binary and weighted modularity: 
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(TABLE_RESULTS$modularity~BIN_TABLE_RESULTS$modularity, pch=16, col=COLORS2[-2][as.factor(TABLE_RESULTS$interaction_type)], ylab="weighted modularity", xlab="binary modularity", xlim=c(0,1), ylim=c(0,1))
+curve(1*x,add=T, lty=2)
+legend(x =0 ,y=1, legend=c("Seed dispersion","Host-Parasite","Pollination"),col=COLORS2[-2],pch=16)
+cor.test(TABLE_RESULTS$modularity,BIN_TABLE_RESULTS$modularity,method=c("spearman"))
+```
+
+The dashed line represents equal values of weighted and binary modularity. Most of the points (53 out of 68) are above the line, which means that networks are more modular in their weighted than in their binary structures.
+
+# 3. Nestedness vs. Modularity
+
+Weighted nestedness: we applied the WNODA index (Pinheiro et al. 2019).
+
+Weighted modularity: we calculated Barber's modularity index (Barber 2007) using the LPA and the DIRT LPA algorithms (Beckett 2016). 
+
+For too large networks (> 600 species), it was computational impracticable to apply the DIRT LPA algorithm, so we applied the faster, although a bit less effective, LPA.
+
+```{r}
+knitr::kable(X[(X$rows+X$cols)>600,c(1,2,3,7,8)], format = "simple", row.names = F)
+```
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(WNODA~modularity, pch=16, col=COLORS2[-2][as.factor(interaction_type)], ylim=c(0,80), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS[min_dim,])
+legend(x =0.5 ,y=80, legend=c("Seed dispersion","Host-Parasite","Pollination"),col=COLORS2[-2],pch=16)
+```
+
+Testing the correlation between modularity and nestedness:
+
+```{r}
+cor.test(TABLE_RESULTS$WNODA,TABLE_RESULTS$modularity,method=c("spearman"))
+```
+
+# 4. Correlations and comparisons
+
+## 4.1. Connectance:
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(WNODA~modularity, pch=16, col=COLORS2[-2][as.factor(interaction_type)], ylim=c(0,100), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS,cex=X$connectance[min_dim]*4)
+legend(x =0.5 ,y=100, legend=c("Seed dispersion","Host-Parasite","Pollination"),col=COLORS2[-2],pch=16)
+```
+
+Correlation between modularity and connectance:
+
+```{r}
+cor.test(TABLE_RESULTS$modularity, TABLE_RESULTS$connectance, method="spearman")
+```
+
+Correlation between nestedness and connectance:
+
+```{r}
+cor.test(TABLE_RESULTS$WNODA, TABLE_RESULTS$connectance, method="spearman")
+```
+
+## 4.2. Network size:
+
+Size was log transformed (size = log(number of species))
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(WNODA~modularity, pch=16, col=COLORS2[-2][as.factor(interaction_type)], ylim=c(0,80), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS,cex=log(X$rows+X$cols)/3)
+legend(x =0.5 ,y=80, legend=c("Seed dispersion","Host-Parasite","Pollination"),col=COLORS2[-2],pch=16)
+```
+
+## 4.3. Nestedness vs. kind of interaction
+
+```{r}
+COLORS3=c("#88CC88","#55AA55","#2D882D","#116611","#004400")
+```
+
+```{r}
+par(mar=c(4,4,0.3,0))
+boxplot(WNODA~interaction_type, data=TABLE_RESULTS, ylab="nestedness", xlab=NA, names=c("Seed dispersion","Host-Parasite","Pollination"), pch=16,col=COLORS2[c(1,3,4)])
+```
+
+## 4.4. Modularity vs. kind of interaction
+
+```{r}
+par(mar=c(4,4,0.3,0))
+boxplot(modularity~interaction_type, data=TABLE_RESULTS, ylab="modularity", xlab=NA, names=c("Seed dispersion","Host-Parasite","Pollination"), pch=16,col=COLORS2[c(1,3,4)])
+```
+
+# 5. Modularity and nestedness significance
+
+Null models in our study are composed of 105 randomized matrices each. This is not a very high number of matrices, but for computational limitations it was impracticable to produce larger null models. We analyzed a large number of real networks (binary: 142, weighted: 68), some of which including a very large number of species (max= 1881 species).
+
+All weighted networks have link density higher than 1.
+
+## 5.1. Significantly nested
+
+Nestedness significance was assessed through comparisons with the equiprobable null model.
+
+```{r}
+print(paste("Networks with significant nestedness:", (sum(TABLE_RESULTS$wnoda_equi_sig))))
+```
+
+```{r, include=F}
+net_size=X$rows+X$cols
+M1=glm(TABLE_RESULTS$wnoda_equi_sig~net_size, family="binomial")
+C=coef(M1)
+```
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(TABLE_RESULTS$wnoda_equi_sig~net_size, pch=16, ylab="Nestedness significance", xlab="Network size")
+curve((exp(C[[1]]+C[[2]]*x)/(1+exp(C[[1]]+C[[2]]*x))), add=T)
+```
+
+
+## 5.2. Significantly modular
+
+Modularity significance was assessed through comparisons with the proportional null model.
+
+```{r}
+print(paste("Networks with significant modularity:", (sum(TABLE_RESULTS$wmod_prop_sig))))
+```
+
+# 6. Nestedness SM and DM
+
+For significant modular networks we calculated nestedness between species belonging to the same module (N~SM~) and nestedness between species in different modules (N~DM~) (Flores et al. 2013, Pinheiro et al. 2019, Felix et al. 2022).
+
+```{r, results="hide"}
+criterium2=TABLE_RESULTS$wmod_prop_sig
+```
+
+
+```{r}
+print(paste("Modular networks:", sum(criterium2)))
+barplot(table(TABLE_RESULTS$interaction_type[criterium2]),names.arg = c("Seed dispersion","Host-Parasite","Pollination"), col=COLORS2[1:3],space = .3,cex.names = .9,main= "Modular networks by kind of interaction", ylim=c(0,45))
+text(y=4, x=c(.8,2.1,3.4),table(TABLE_RESULTS$interaction_type[criterium2]), cex=1.5, col="white")
+```
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(WNODA~modularity, pch=NA, ylim=c(0,100), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS[criterium2,])
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$WNODA[criterium2],y1=TABLE_RESULTS$WNODA_SM[criterium2],col=COLORS1[2],length = 0)
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$WNODA[criterium2],y1=TABLE_RESULTS$WNODA_DM[criterium2],col=COLORS1[3],length = 0)
+points(WNODA_SM~modularity, pch=16, col=COLORS1[2], data=TABLE_RESULTS[criterium2,])
+points(WNODA_DM~modularity, pch=16, col=COLORS1[3], data=TABLE_RESULTS[criterium2,])
+points(WNODA~modularity, pch=16, col=COLORS1[1], data=TABLE_RESULTS[criterium2,])
+legend(x =0.1 ,y=100, legend=c("Overall","SM","DM"),col=COLORS1[1:3],pch=16)
+```
+
+I applied local regressions (R function loess), very smoothly, to see the general trend of NODF~O~, NODF~SM~ and NODF~DM~, with increasing modularity.
+
+```{r}
+par(mar=c(4,4,0.3,0))
+plot(WNODA~modularity, pch=NA, ylim=c(0,100), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS[criterium2,])
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$WNODA[criterium2],y1=TABLE_RESULTS$WNODA_SM[criterium2],col=COLORS1[2],length = 0)
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$WNODA[criterium2],y1=TABLE_RESULTS$WNODA_DM[criterium2],col=COLORS1[3],length = 0)
+points(WNODA~modularity, pch=16, col=COLORS1[1], data=TABLE_RESULTS[criterium2,])
+points(WNODA_SM~modularity, pch=16, col=COLORS1[2], data=TABLE_RESULTS[criterium2,])
+points(WNODA_DM~modularity, pch=16, col=COLORS1[3], data=TABLE_RESULTS[criterium2,])
+pred1=predict(loess(TABLE_RESULTS[criterium2,]$WNODA~TABLE_RESULTS[criterium2,]$modularity,span = 1), type="response", newdata = seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000))
+lines(pred1~seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000), lty=2)
+pred2=predict(loess(TABLE_RESULTS[criterium2,]$WNODA_SM~TABLE_RESULTS[criterium2,]$modularity,span = 1), type="response", newdata = seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000))
+lines(pred2~seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000), lty=2, col=COLORS1[2])
+pred3=predict(loess(TABLE_RESULTS[criterium2,]$WNODA_DM~TABLE_RESULTS[criterium2,]$modularity,span = 1), type="response", newdata = seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000))
+lines(pred3~seq(min(TABLE_RESULTS[criterium2,]$modularity),max(TABLE_RESULTS[criterium2,]$modularity),length.out=10000), lty=2, col=COLORS1[3])
+legend(x =0.1 ,y=100, legend=c("Overall","SM","DM"),col=COLORS1[1:3],pch=16)
+rm(pred1, pred2, pred3)
+```
+
+# 7. Significance of nestedness SM
+
+We used restricted null models (models that conserve the modular structure on the networks) to test N~SM~ significance.
+
+
+```{r}
+print(paste("Networks with significant nestedness SM:", (sum(TABLE_RESULTS$wnoda_equi_SM_sig[criterium2]))))
+par(mar=c(4,4,0.3,0))
+plot(equi_null_SM_mean~modularity, pch=NA, col=COLORS1[1], ylim=c(0,90), ylab="nestedness", xlab="modularity", data=TABLE_RESULTS[criterium2,])
+points(WNODA_SM~modularity, pch=16, col=COLORS1[2], data=TABLE_RESULTS[criterium2,])
+points(equi_null_SM_mean~modularity, pch=16, cex=.7, col="grey30", data=TABLE_RESULTS[criterium2,])
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$equi_null_SM_mean[criterium2],y1=TABLE_RESULTS$equi_SM_ci_up[criterium2],col="grey30",length = .05,angle=90)
+arrows(x0=TABLE_RESULTS$modularity[criterium2],y0=TABLE_RESULTS$equi_null_SM_mean[criterium2],y1=TABLE_RESULTS$equi_SM_ci_down[criterium2],col="grey30",length = .05,angle=90)
+points(WNODA_SM~modularity, pch=01, col="red", data=TABLE_RESULTS[criterium2&TABLE_RESULTS$topology=="compound",],cex=2)
+legend(x =0.05 ,y=90, legend=c("SM", "Null model",NA,"Significance"),col=c(COLORS1[2],"grey30",NA,"red"),pch=c(16,16,NA,1), pt.cex=c(1,1,0,2))
+```
+
+# 8. Network topologies
+
+Significance tests:
+
+Equiprobable null model for N~O~ significance.
+
+Proportional null model for modularity significance.
+
+Equiprobable restricted null model for N~SM~ significance.
+
+Topologies:
+
+Nested network: non-significant modularity and significant N~O~
+
+Pure modular network: significant modularity and non-significant N~SM~
+
+Compound topology: singnificant modularity and significant N~SM~
+
+Unstructured: non significant N~O~ and non significant modularity
+```{r}
+TAB1=table(TABLE_RESULTS$topology)
+TAB1=TAB1[c(2,3,1)]
+knitr::kable(TAB1,col.names = c("topology","Number of networks"), format = "simple")
+```
+
+## 8.1. Topology vs. kind of interaction
+
+```{r, include=F}
+COLORS4=c("#CA5368", "#D7B958", "#4E4A96", "#6CB94C")
+
+```
+
+```{r}
+TAB3=TABLE_RESULTS[,c(1,9)]
+TAB3=table(TAB3)
+TAB3=TAB3[c(2,3,1),]
+knitr::kable(TAB3, format = "simple",col.names = c("seed dispersal","host-parasite","pollination"))
+```
+
+# 9. References
+C. O. Flores, S. Valverde, J. S. Weitz, Multi-scale structure and geographic drivers of cross-infection within marine bacteria and phages. ISME J. 7, 520–532 (2013).
+
+J. D. Hadfield, B. R. Krasnov, R. Poulin, S. Nakagawa, A Tale of Two Phylogenies: Comparative Analyses of Ecological Interactions. Am. Nat. 183, 174–187 (2014).
+
+S. J. Beckett, Improved community detection in weighted bipartite networks. R. Soc. Open Sci. 3, 140536 (2016).
+
+R. B. P. Pinheiro, G. M. F. Felix, C. F. Dormann, M. A. R. Mello, A new model explaining the origin of different topologies in interaction networks. Ecology 100, 1–30 (2019).
+
+G. M. Felix, R. B. P. Pinheiro, R. Poulin, B. R. Krasnov, M. A. R. Mello, The compound topology of host–parasite networks is explained by the integrative hypothesis of specialization. Oikos 2022 (2022).
+

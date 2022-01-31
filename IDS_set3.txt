@@ -1,0 +1,2 @@
+ID	Interaction	Reference	File
+TP-072	pollin	Gonzalez Alvaro 2004	gonzalez_alvaro.txt

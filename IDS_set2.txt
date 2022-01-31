@@ -1,0 +1,7 @@
+ID	Interaction	Reference	File
+TP-001	disp	Beehler 1983	wol/M_SD_002.csv
+TP-073	pollin	Yamazaki 2003	wol/M_PL_053.csv
+TP-075	pollin	Dupont  2009	wol/M_PL_048.csv
+TP-076	pollin	Bek 2006	wol/M_PL_049.csv
+TP-077	pollin	Dupont 2009	wol/M_PL_047.csv
+TP-092	pollin	Philipp 2006	wol/M_PL_042.csv
