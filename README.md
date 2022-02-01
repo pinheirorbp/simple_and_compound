@@ -1,5 +1,5 @@
 # Compound topology uncovers complex structure of species interaction networks
-Rafael B. P. Pinheiro, Gabriel M. F. Felix and Thomas M. Lewinsohn
+Rafael B. P. Pinheiro, Gabriel M. F. Felix and Thomas M. Lewinsohn <br>
 <a href="https://zenodo.org/badge/latestdoi/431122160"><img src="https://zenodo.org/badge/431122160.svg" alt="DOI"></a>
 
 
