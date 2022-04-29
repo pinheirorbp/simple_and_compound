@@ -1,4 +1,4 @@
-# This script is called within the RMarkdown file ("weighted.Rmd" in the folder "analysis/results"). 
+# This script is called within the RMarkdown file ("weighted.Rmd" in the folder "results"). 
 #However, they might be used separated. In this case, define the codes for the subsets for aggregation in an object CODES
 # CODES= c("set1W")
 ### packages ####
@@ -6,9 +6,9 @@ library(bipartite)
 library(stringr)
 ### Loading results ####
 L= length(CODES)
-load(paste("analysis/files/modularity_",CODES[1],".RData",sep=""))
-load(paste("analysis/files/nestedness_",CODES[1],".RData",sep=""))
-load(paste("analysis/files/compound_",CODES[1],".RData",sep=""))
+load(paste("files/modularity_",CODES[1],".RData",sep=""))
+load(paste("files/nestedness_",CODES[1],".RData",sep=""))
+load(paste("files/compound_",CODES[1],".RData",sep=""))
 ### significance and topology ####
 wnoda_equi_sig=WNODAsummary$WNODA>WNODAsummary$equi_ci_up
 wmod_equi_sig=WMODsummary$modularity>WMODsummary$equi_null_ci_up
@@ -25,16 +25,16 @@ topology[wmod_prop_sig&wnoda_equi_SM_sig]="compound"
 topology[wmod_prop_sig&!wnoda_equi_SM_sig]="pure modular"
 topology[!wmod_prop_sig&!wnoda_equi_sig]="unstructured"
 ### loading networks ####
-X= read.table(paste("analysis/IDS_",CODES[1],".txt",sep=""), header = T, sep="\t")
+X= read.table(paste("IDS_",CODES[1],".txt",sep=""), header = T, sep="\t")
 ids=X$ID
 L1=length(ids)
 # binary version
 BIN_NETS=list()
 for (i in 1:L1){
   if(str_detect(X$Binary_file[i],pattern = ".txt")){ #txt files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""))}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""))}
   if(str_detect(X$Binary_file[i],pattern = ".csv")){ #csv files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""), sep = ",")}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(BIN_NETS[[i]])
   Cs=colSums(BIN_NETS[[i]])
@@ -52,9 +52,9 @@ NETS=list()
 X$WB_inconsistencies=""
 for (i in 1:L1){
   if(str_detect(X$Weighted_file[i],pattern = ".txt")){ #txt files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""))}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""))}
   if(str_detect(X$Weighted_file[i],pattern = ".csv")){ #csv files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""), sep = ",")}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(NETS[[i]])
   Cs=colSums(NETS[[i]])
@@ -100,7 +100,7 @@ linkage_density=(X$nint/(X$rows+X$cols))
 ### plot nested ####
 for (i in 1:L1){
   par(mar=c(4.2,2,2,2))
-  png(filename = paste("analysis/plots/nest_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+  png(filename = paste("plots/nest_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
   plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested",sort_by = "weights"), binary=F,xlab = names(NETS)[i])
   if(!min_dim[i]){
     mtext(paste("[Less than",MIN,"species in each dimension]"), side=1, line=1, col="red", cex=1)}
@@ -115,7 +115,7 @@ ISWMOD=WMODsummary$modularity>WMODsummary$prop_null_ci_up
 for (i in 1:L1){
   if(ISWMOD[i]){
     par(mar=c(4.2,2,2,2))
-    png(filename = paste("analysis/plots/compound_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+    png(filename = paste("plots/compound_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
     plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = WMODcomplete[[i]]$row_modules, col_partitions = WMODcomplete[[i]]$col_modules,mod_similarity = T,sort_by = "weights"), binary=F,xlab = names(NETS)[i],border = T)
     dev.off()
     dev.off()
@@ -128,9 +128,9 @@ rm(WMODcomplete,WMODsummary,WNODAcomplete,WNODAsummary,WCOMPOUNDsummary,WCOMPOUN
 
 if(L>1){
   for(ii in 2:L){
-    load(paste("analysis/files/modularity_",CODES[ii],".RData",sep=""))
-    load(paste("analysis/files/nestedness_",CODES[ii],".RData",sep=""))
-    load(paste("analysis/files/compound_",CODES[ii],".RData",sep=""))
+    load(paste("files/modularity_",CODES[ii],".RData",sep=""))
+    load(paste("files/nestedness_",CODES[ii],".RData",sep=""))
+    load(paste("files/compound_",CODES[ii],".RData",sep=""))
     ### significance and topology ####
     wnoda_equi_sig=WNODAsummary$WNODA>WNODAsummary$equi_ci_up
     wmod_equi_sig=WMODsummary$modularity>WMODsummary$equi_null_ci_up
@@ -149,16 +149,16 @@ if(L>1){
     topology[wmod_prop_sig&!wnoda_equi_SM_sig]="pure modular"
     topology[!wmod_prop_sig&!wnoda_equi_sig]="other"
     ### loading networks ####
-    X= read.table(paste("analysis/IDS_",CODES[1],".txt",sep=""), header = T, sep="\t")
+    X= read.table(paste("IDS_",CODES[1],".txt",sep=""), header = T, sep="\t")
     ids=X$ID
     L1=length(ids)
     # binary version
     BIN_NETS=list()
     for (i in 1:L1){
       if(str_detect(X$Binary_file[i],pattern = ".txt")){ #txt files
-        BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""))}
+        BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""))}
       if(str_detect(X$Binary_file[i],pattern = ".csv")){ #csv files
-        BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""), sep = ",")}
+        BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""), sep = ",")}
       #empty rows and columns
       Rs=rowSums(BIN_NETS[[i]])
       Cs=colSums(BIN_NETS[[i]])
@@ -176,9 +176,9 @@ if(L>1){
     X$WB_inconsistencies=""
     for (i in 1:L1){
       if(str_detect(X$Weighted_file[i],pattern = ".txt")){ #txt files
-        NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""))}
+        NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""))}
       if(str_detect(X$Weighted_file[i],pattern = ".csv")){ #csv files
-        NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""), sep = ",")}
+        NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""), sep = ",")}
       #empty rows and columns
       Rs=rowSums(NETS[[i]])
       Cs=colSums(NETS[[i]])
@@ -224,7 +224,7 @@ if(L>1){
     ### plot nested ####
     for (i in 1:L1){
       par(mar=c(4.2,2,2,2))
-      png(filename = paste("analysis/plots/nest_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+      png(filename = paste("plots/nest_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
       plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested",sort_by = "weights"), binary=F,xlab = names(NETS)[i])
       if(!min_dim[i]){
         mtext(paste("[Less than",MIN,"species in each dimension]"), side=1, line=1, col="red", cex=1)}
@@ -239,7 +239,7 @@ if(L>1){
     for (i in 1:L1){
       if(ISWMOD[i]){
         par(mar=c(4.2,2,2,2))
-        png(filename = paste("analysis/plots/compound_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+        png(filename = paste("plots/compound_matrix/weighted/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
         plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = WMODcomplete[[i]]$row_modules, col_partitions = WMODcomplete[[i]]$col_modules,mod_similarity = T,sort_by = "weights"), binary=F,xlab = names(NETS)[i],border = T)
         dev.off()
         dev.off()
@@ -252,6 +252,6 @@ if(L>1){
     NETDATA=rbind(NETDATA,X)
     rownames(TABLE_RESULTS)=NETDATA$ID
   }}
-write.table(TABLE_RESULTS,file =paste("analysis/results/",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
-write.table(NETDATA,file =paste("analysis/results/","NETDATA_",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
+write.table(TABLE_RESULTS,file =paste("results/",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
+write.table(NETDATA,file =paste("results/","NETDATA_",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
 rm(list = as.character(ls())[!is.element(as.character(ls()),c("CODES","NAME_OUTPUT","MIN"))])
