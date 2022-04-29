@@ -1,5 +1,5 @@
 # In this script we perform the weighted topology tests in subsets of defined networks
-# In the RMarkdown file ("weighted.Rmd" in the folder "analysis/results") statistical analysis is performed for the subset.
+# In the RMarkdown file ("weighted.Rmd" in the folder "results") statistical analysis is performed for the subset.
 # The "aggregation_results_W.R" script is called within the "RMarkdown" file to aggregate results from subsets that were separately tested here
 ### Preparing files for analysis ####
 # Packages
@@ -7,10 +7,10 @@ library(bipartite)
 library(doSNOW)
 library(vegan)
 library(stringr)
-setwd("~/compound topology")# Define here the home folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))# Define here the home folder
 # Functions
-source("analysis/functions/PosteriorProb.R")
-source("analysis/functions/RestNullModel.R")
+source("functions/PosteriorProb.R")
+source("functions/RestNullModel.R")
 ## This code is prepared for parallel computation during null model analysis
 N_CORES=15 ## Number of parallel cores
 N=7 ### Null matrices per core
@@ -20,16 +20,16 @@ N=7 ### Null matrices per core
 ## Code for the subset
 CODE="set1W"
 # File IDs = list of network ids to be analyzed
-X= read.table(paste("analysis/IDS_",CODE,".txt",sep=""), header = T, sep="\t")
+X= read.table(paste("IDS_",CODE,".txt",sep=""), header = T, sep="\t")
 ids=X$ID
 L=length(ids)
 #loading binary networks
 BIN_NETS=list()
 for (i in 1:L){
   if(str_detect(X$Binary_file[i],pattern = ".txt")){ #txt files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""))}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""))}
   if(str_detect(X$Binary_file[i],pattern = ".csv")){ #csv files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""), sep = ",")}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(BIN_NETS[[i]])
   Cs=colSums(BIN_NETS[[i]])
@@ -46,9 +46,9 @@ for (i in 1:L){
 NETS=list()
 for (i in 1:L){
   if(str_detect(X$Weighted_file[i],pattern = ".txt")){ #txt files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""))}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""))}
   if(str_detect(X$Weighted_file[i],pattern = ".csv")){ #csv files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""), sep = ",")}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(NETS[[i]])
   Cs=colSums(NETS[[i]])
@@ -171,12 +171,12 @@ WNODAsummary$prop_ci_down= sapply(WNODAcomplete, function(x) quantile(x$prop_nul
 WNODAsummary$prop_ci_up2= sapply(WNODAcomplete, function(x) quantile(x$prop_nullwnoda,1))
 WNODAsummary$prop_ci_down2= sapply(WNODAcomplete, function(x) quantile(x$prop_nullwnoda,0.05))
 names(WNODAcomplete)=rownames(WNODAsummary)=ids
-save(WNODAcomplete,WNODAsummary, file=paste("analysis/files/nestedness_",CODE,".RData", sep=""))
+save(WNODAcomplete,WNODAsummary, file=paste("files/nestedness_",CODE,".RData", sep=""))
 ### modularity analysis ####
 WMODcomplete=list()
 WMODsummary=data.frame(modularity=rep(NA,L),nmod=rep(NA,L),equi_null_mean=rep(NA,L),equi_null_sd=rep(NA,L),equi_z=rep(NA,L),equi_null_ci_up=rep(NA,L),equi_null_ci_down=rep(NA,L),prop_null_mean=rep(NA,L),prop_null_sd=rep(NA,L),prop_z=rep(NA,L),prop_null_ci_up=rep(NA,L),prop_null_ci_down=rep(NA,L))
 # recovering null models from nestedness analysis - same models
-load(paste("analysis/files/nestedness_",CODE,".RData", sep=""))
+load(paste("files/nestedness_",CODE,".RData", sep=""))
 # equiprobable
 equi_nulls_L=list() #equinulls for all networks
 for (T in 1:L){
@@ -250,7 +250,7 @@ for (i in c(11,15)){ #c(1:10,12,14,17:L) #c(13,16) #c(11,15)(LPA)
   rm(prop_nulls)
 }
 names(WMODcomplete)=rownames(WMODsummary)=ids
-save(WMODcomplete,WMODsummary, file=paste("analysis/files/modularity_",CODE,".RData", sep=""))
+save(WMODcomplete,WMODsummary, file=paste("files/modularity_",CODE,".RData", sep=""))
 rm(WMOD,mod.equi_nulls,mod.prop_nulls,equi_nulls_L,prop_nulls_L,i,nmod,like.equi_nulls,like.prop_nulls,row_modules,col_modules)
 #### modular networks ####
 ISWMOD=(WMODsummary$modularity>WMODsummary$prop_null_ci_up)|(WMODsummary$modularity>WMODsummary$equi_null_ci_up)
@@ -381,8 +381,8 @@ for (i in c(1:10,12,14,17:L)){#c(1:10,12,14,17:L)
   rm(NEST_SM_DM)
 }
 names(WCOMPOUNDcomplete)=rownames(WCOMPOUNDsummary)=ids
-save(WCOMPOUNDcomplete,WCOMPOUNDsummary, file=paste("analysis/files/compound_",CODE,".RData", sep=""))
-## This script creates 3 files with results of tests in the folder "analysis/files/"
+save(WCOMPOUNDcomplete,WCOMPOUNDsummary, file=paste("files/compound_",CODE,".RData", sep=""))
+## This script creates 3 files with results of tests in the folder "files/"
 ## 1 modularity_CODE.RData
 ## 2 Nestedness_CODE.RData 
 ## 3 Compound tests_CODE.RData

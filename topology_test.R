@@ -1,15 +1,15 @@
 # In this script we perform the binary topology tests in subsets of defined networks
-# In the RMarkdown file ("binary.Rmd" in the folder "analysis/results") statistical analysis is performed for the subset.
+# In the RMarkdown file ("binary.Rmd" in the folder "results") statistical analysis is performed for the subset.
 # The "aggregation_results.R" script is called within the "RMarkdown" file to aggregate results from subsets that were separately tested here
 # Packages
 library(bipartite)
 library(doSNOW)
 library(vegan)
 library(stringr)
-setwd("~/compound topology") # Define here the home folder
+setwd("~/simple_and_compound") # Define here the home folder
 # Functions
-source("analysis/functions/PosteriorProb.R")
-source("analysis/functions/RestNullModel.R")
+source("functions/PosteriorProb.R")
+source("functions/RestNullModel.R")
 ## This code is prepared for parallel computation during null model analysis
 N_CORES=35 ## Number of parallel cores
 N=3 ### Null matrices per core
@@ -18,18 +18,18 @@ N=3 ### Null matrices per core
 # Names of file IDS = "IDS_CODE.txt"
 # We did not run all networks together, but in three subsets, indicated in the files IDS_set1.txt, IDS_set2.txt and IDS_set3.txt (see one of these for the format)
 ## Code for the subset
-CODE="set3"
+CODE="set1"
 ##
-X= read.table(paste("analysis/IDS_",CODE,".txt",sep=""), header = T, sep="\t")
+X= read.table(paste("IDS_",CODE,".txt",sep=""), header = T, sep="\t")
 ids=X$ID
 L=length(ids)
 #loading networks
 NETS=list()
 for (i in 1:L){
   if(str_detect(X$File[i],pattern = ".txt")){ #txt files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$File[i],sep = ""))}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$File[i],sep = ""))}
   if(str_detect(X$File[i],pattern = ".csv")){ #csv files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$File[i],sep = ""), sep = ",")}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$File[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(NETS[[i]])
   Cs=colSums(NETS[[i]])
@@ -112,13 +112,13 @@ NODFsummary$equi_ci_down= sapply(NODFcomplete, function(x) quantile(x$equi_nulln
 NODFsummary$prop_ci_up= sapply(NODFcomplete, function(x) quantile(x$prop_nullnodf,0.975))
 NODFsummary$prop_ci_down= sapply(NODFcomplete, function(x) quantile(x$prop_nullnodf,0.025))
 names(NODFcomplete)=rownames(NODFsummary)=ids
-save(NODFcomplete,NODFsummary, file=paste("analysis/files/nestedness_",CODE,".RData", sep=""))
+save(NODFcomplete,NODFsummary, file=paste("files/nestedness_",CODE,".RData", sep=""))
 
 ### modularity analysis ####
 MODcomplete=list()
 MODsummary=data.frame(modularity=rep(NA,L),nmod=rep(NA,L),equi_null_mean=rep(NA,L),equi_null_sd=rep(NA,L),equi_z=rep(NA,L),equi_null_ci_up=rep(NA,L),equi_null_ci_down=rep(NA,L),prop_null_mean=rep(NA,L),prop_null_sd=rep(NA,L),prop_z=rep(NA,L),prop_null_ci_up=rep(NA,L),prop_null_ci_down=rep(NA,L))
 # recovering null models from nestedness analysis - same models
-load(paste("analysis/files/nestedness_",CODE,".RData", sep=""))
+load(paste("files/nestedness_",CODE,".RData", sep=""))
 # equiprobable
 equi_nulls_L=list() #equinulls for all networks
 for (T in 1:L){
@@ -196,7 +196,7 @@ for (i in 1:L){
   rm(prop_nulls)
 }
 names(MODcomplete)=rownames(MODsummary)=ids
-save(MODcomplete,MODsummary, file=paste("analysis/files/modularity_",CODE,".RData", sep=""))
+save(MODcomplete,MODsummary, file=paste("files/modularity_",CODE,".RData", sep=""))
 rm(MOD,mod.equi_nulls,mod.prop_nulls,equi_nulls_L,prop_nulls_L,i,nmod,like.equi_nulls,like.prop_nulls,row_modules,col_modules)
 #### modular networks ####
 ISMOD=(MODsummary$modularity>MODsummary$prop_null_ci_up)|(MODsummary$modularity>MODsummary$equi_null_ci_up)
@@ -283,8 +283,8 @@ for (i in 1:L){
   rm(NEST_SM_DM)
 }
 names(COMPOUNDcomplete)=rownames(COMPOUNDsummary)=ids
-save(COMPOUNDcomplete,COMPOUNDsummary, file=paste("analysis/files/compound_",CODE,".RData", sep=""))
-## This script creates 3 files with results of tests in the folder "analysis/files/"
+save(COMPOUNDcomplete,COMPOUNDsummary, file=paste("files/compound_",CODE,".RData", sep=""))
+## This script creates 3 files with results of tests in the folder "files/"
 ## 1 modularity_CODE.RData
 ## 2 Nestedness_CODE.RData 
 ## 3 Compound tests_CODE.RData

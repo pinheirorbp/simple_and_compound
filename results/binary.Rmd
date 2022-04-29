@@ -1,14 +1,14 @@
 ---
 title: "DETAILED REPORT OF BINARY ANALYSES"
 author: "Pinheiro R.B.P., Felix G.M.F., and Lewinsohn T.M."
-date: "February 2022"
-output: word_document
+date: "April 2022"
+output: pdf_document
 toc: yes
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 knitr::opts_chunk$set(fig.height = 4, fig.width = 8)
-knitr::opts_knit$set(root.dir = "~/Biologia/Projetos/postdoc_unicamp/postdoc 1/compound_topologies")
+knitr::opts_knit$set(root.dir = "../")
 ```
 
 ```{r include=FALSE}
@@ -26,7 +26,7 @@ CODES=c("set1","set2","set3")
 NAME_OUTPUT=paste(CODES,collapse = "_")#(NAME_OUTPUT in aggregation_results.R)
 # Minimum size in each dimension
 MIN=0
-#source("analysis/aggregation_results.R")
+#source("aggregation_results.R")
 # Colors
 COLORS1=c(1,"#1E46D9","#F80631","#00D400","#FFA100","#7A05C5")
 COLORS2=c("#AF2E45","#BA9A31","#353082","#4EA02A")
@@ -35,8 +35,8 @@ COLORS2=c("#AF2E45","#BA9A31","#353082","#4EA02A")
 
 ```{r results="hide"}
 
-TABLE_RESULTS=read.table(paste("analysis/results/",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
-X=read.table(paste("analysis/results/","NETDATA_",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+TABLE_RESULTS=read.table(paste("results/",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+X=read.table(paste("results/","NETDATA_",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
 rownames(TABLE_RESULTS)=X$ID
 # File IDs = list of network ids to be analyzed
 ids=X$ID
@@ -72,9 +72,9 @@ text(y=10, x=c(1,2.5,4,5.5),table(TABLE_RESULTS$interaction_type), cex=1.5, col=
 ```{r}
 for (i in 1:L){
   if(str_detect(X$File[i],pattern = ".txt")){ #txt files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$File[i],sep = ""))}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$File[i],sep = ""))}
   if(str_detect(X$File[i],pattern = ".csv")){ #csv files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$File[i],sep = ""), sep = ",")}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$File[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(NETS[[i]])
   Cs=colSums(NETS[[i]])

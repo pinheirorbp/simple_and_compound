@@ -1,15 +1,15 @@
 ---
 title: "DETAILED REPORT OF WEIGHTED ANALYSES"
 author: "Pinheiro R.B.P., Felix G.M.F., and Lewinsohn T.M."
-date: "February 2022"
-output: word_document
+date: "April 2022"
+output: pdf_document
 toc: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 knitr::opts_chunk$set(fig.height = 4, fig.width = 8)
-knitr::opts_knit$set(root.dir = "~/Biologia/Projetos/postdoc_unicamp/postdoc 1/compound_topologies")
+knitr::opts_knit$set(root.dir = "../")
 ```
 
 ```{r include=FALSE}
@@ -28,7 +28,7 @@ NAME_OUTPUT=paste(CODES,collapse = "_")#(NAME_OUTPUT in aggregation_results.R)
 # Minimum size in each dimension
 MIN=0
 #
-#source("analysis/aggregation_results_W.R")
+#source("aggregation_results_W.R")
 # Colors
 COLORS1=c(1,"#1E46D9","#F80631","#00D400","#FFA100","#7A05C5")
 COLORS2=c("#AF2E45","#BA9A31","#353082","#4EA02A")
@@ -39,8 +39,8 @@ BIN_NAME_OUTPUT=paste(BINCODES,collapse = "_")
 
 ```{r results="hide"}
 
-TABLE_RESULTS=read.table(paste("analysis/results/",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
-X=read.table(paste("analysis/results/","NETDATA_",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+TABLE_RESULTS=read.table(paste("results/",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
+X=read.table(paste("results/","NETDATA_",NAME_OUTPUT,".txt",sep=""), sep="\t", header=T, row.names = 1)
 # File IDs = list of network ids to be analyzed
 ids=X$ID
 L=length(ids)
@@ -68,9 +68,9 @@ text(y=4, x=c(1,2.5,4,5.5),table(TABLE_RESULTS$interaction_type), cex=1.5, col="
 BIN_NETS=list()
 for (i in 1:L){
   if(str_detect(X$Binary_file[i],pattern = ".txt")){ #txt files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""))}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""))}
   if(str_detect(X$Binary_file[i],pattern = ".csv")){ #csv files
-    BIN_NETS[[ids[i]]]<-read.table(paste("Networks/",X$Binary_file[i],sep = ""), sep = ",")}
+    BIN_NETS[[ids[i]]]<-read.table(paste("networks/",X$Binary_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(BIN_NETS[[i]])
   Cs=colSums(BIN_NETS[[i]])
@@ -97,9 +97,9 @@ Inconsistencies within 2 decimal places for connectance.
 NETS=list()
 for (i in 1:L){
   if(str_detect(X$Weighted_file[i],pattern = ".txt")){ #txt files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""))}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""))}
   if(str_detect(X$Weighted_file[i],pattern = ".csv")){ #csv files
-    NETS[[ids[i]]]<-read.table(paste("Networks/",X$Weighted_file[i],sep = ""), sep = ",")}
+    NETS[[ids[i]]]<-read.table(paste("networks/",X$Weighted_file[i],sep = ""), sep = ",")}
   #empty rows and columns
   Rs=rowSums(NETS[[i]])
   Cs=colSums(NETS[[i]])
@@ -143,8 +143,8 @@ for (i in 1:L){
 # 2. Binary vs. weighted indices (nestedness and modularity)
 
 ```{r, include=F}
-BIN_TABLE_RESULTS=read.table(paste("analysis/results/",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
-BIN_X=read.table(paste("analysis/results/","NETDATA_",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
+BIN_TABLE_RESULTS=read.table(paste("results/",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
+BIN_X=read.table(paste("results/","NETDATA_",BIN_NAME_OUTPUT,".txt",sep=""), sep="\t", header=T)
 BIN_TABLE_RESULTS=BIN_TABLE_RESULTS[match(rownames(TABLE_RESULTS),rownames(BIN_TABLE_RESULTS)),]
 BIN_X=BIN_X[match(rownames(TABLE_RESULTS),rownames(BIN_X)),]
 ```
