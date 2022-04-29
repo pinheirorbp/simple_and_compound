@@ -6,7 +6,7 @@ library(bipartite)
 library(doSNOW)
 library(vegan)
 library(stringr)
-setwd("~/simple_and_compound") # Define here the home folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))# Define here the home folder
 # Functions
 source("functions/PosteriorProb.R")
 source("functions/RestNullModel.R")
