@@ -1,7 +1,7 @@
 ---
 title: "DETAILED REPORT OF BINARY ANALYSES"
 author: "Pinheiro R.B.P., Felix G.M.F., and Lewinsohn T.M."
-date: "June 2022"
+date: "July 2022"
 output: pdf_document
 toc: yes
 ---
@@ -403,11 +403,6 @@ knitr::kable(TAB1,col.names = c("topology","Number of networks"), format = "simp
 
 ## 8.1. Topology vs. kind of interaction
 
-```{r, include=F}
-COLORS4=c("#CA5368", "#D7B958", "#4E4A96", "#6CB94C")
-
-```
-
 ```{r}
 TAB3=TABLE_RESULTS[criterium1,c(1,8)]
 TAB3.2=TABLE_RESULTS[linkage_density<1&min_dim,c(1,8)]
@@ -420,9 +415,192 @@ knitr::kable(TAB3,col.names = c("seed dispersal","plant-herbivore","host-parasit
 
 # 9. Network robustness
 
+Here, we simulate the exclusion of species on one side of the network (row or columns in the matrix) and analyze the secondary extinctions: species on the other size that lose all interactions. We only used the binary matrices for this analysis.
+
+As the measure of robustness we applied the index proposed by Burgos et al. (2007), which is the area under the secondary extinction curve. We restricted this analysis to nested and compound networks, as they represent the large majority of binary networks (124 out of 142). 
+
+## 9.1 Removal of resource species
+
+```{r, include=F}
+load("results/robustness_set1_set2_set3.RData")
+criterium3=ROB_RESULTS$topology=="nested"|ROB_RESULTS$topology=="compound"
+criterium3[!criterium1]=FALSE
+```
+
+We removed the resource species (rows): plants in seed dispersal, pollination and plant-herbivore networks, and hosts in host-parasite networks.
+
+For all nested or compound networks, we measured robustness to resource species removals (1) based on species degrees (more connected to less connected) and (2) randomly. For each network, we made 1000 random extinction sequences and calculated the average robustness.
+
+```{r, fig.height = 5, fig.width = 5}
+boxplot(ROB_RESULTS$rob_low_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees")
+```
+
+We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
+
+```{r}
+wilcox.test(ROB_RESULTS$rob_low_deg[criterium3&ROB_RESULTS$topology=="nested"],ROB_RESULTS$rob_low_deg[criterium3&ROB_RESULTS$topology=="compound"])
+
+```
+
+Nested networks were significantly more robust to removals of resource species following decreasing degrees than networks with compound topologies.
+
+```{r, fig.height = 5, fig.width = 5}
+boxplot(ROB_RESULTS$rob_low_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="average robustness (1000 extinction sequences)", main="random removals")
+```
+
+We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
+
+```{r}
+wilcox.test(ROB_RESULTS$rob_low_ran[criterium3&ROB_RESULTS$topology=="nested"],ROB_RESULTS$rob_low_ran[criterium3&ROB_RESULTS$topology=="compound"])
+
+```
+We did not find statistically significant differences in the robustness of nested and compound networks to random sequences of resource species removals.
+ 
+ \
+ 
+For networks with compound topologies (n=45) we compared the robustness following two different rules for the sequences of species removals. For each network, using each rule, we made 1000 different sequences of extinctions.
+
+In the first rule, we maximally delay the exclusion of modules (removal of all species of the module). For this, in each round, the resource species to be removed is randomly selected from the module or modules with more remaining resources.
+
+Imagine a network with 15 resource species, distributed among 3 modules: A, B and C. Initially, A has 8 resources, B has 4 and C has 3. This is a possible sequence of removals following rule 1.
+
+remaining species in each module -> action
+
+A=8 B=4 C=3 -> remove a random species from A \
+A=7 B=4 C=3 -> remove a random species from A \
+A=6 B=4 C=3 -> remove a random species from A \
+A=5 B=4 C=3 -> remove a random species from A \
+A=4 B=4 C=3 -> remove a random species from A or B \
+A=4 B=3 C=3 -> remove a random species from A \
+A=3 B=3 C=3 -> remove a random species from A, B or C \
+A=2 B=3 C=3 -> remove a random species from B or C \
+A=2 B=3 C=2 -> remove a random species from B \
+A=2 B=2 C=2 -> remove a random species from A, B or C \
+A=2 B=1 C=2 -> remove a random species from A or C \
+A=2 B=1 C=1 -> remove a random species from A \
+A=1 B=1 C=1 -> remove a random species from A, B or C \
+A=1 B=0 C=1 -> remove a random species from A or C \
+A=0 B=0 C=1 -> remove a random species from C \
+A=0 B=0 C=0 - End of extinction sequence \
+
+The second rule for species removals aims at hastening the exclusion of modules.Therefore, for each sequence of removals, we randomly define the order of modules to be tackled. All modules have the same chance of being selected in any position. Then, we proceed by removing species from the first defined module, until it is fully excluded, then we move to the next and so on.
+
+Imagine a network with 15 resource species, distributed among 3 modules: A, B and C. Initially, A has 8 resources, B has 4 and C has 3. First we define a random order of modules: B - A - C. In the first 4 rounds, random species of module B would be removed, then in the next 8 rounds, the species of A are removed, and finally, in the last 3 rounds, the species of C are removed. 
+
+
+```{r, include=F}
+compound=criterium3&ROB_RESULTS$topology=="compound"
+statistic=numeric()
+pvalue=numeric()
+for (JJJ in 1:142){
+  if(!is.null(COMPOUND1ROB_RESULTS_L[[JJJ]])){
+    TESTE=wilcox.test(COMPOUND1ROB_RESULTS_L[[JJJ]],COMPOUND2ROB_RESULTS_L[[JJJ]])
+    statistic[JJJ]=TESTE$statistic
+    pvalue[JJJ]=TESTE$p.value
+  }
+}
+```
+
+```{r, fig.height = 5}
+plot(NA, ylim=c(0.5,1), xlim=c(.5,2.5), ylab="average robustness (1000 extinction sequences)",xaxt='n', xlab=NA)
+Axis(side=1,at = c(1,2), labels = c("delaying module exclusions","hastening module exclusions"))
+for(JJJ in 1:nrow(ROB_RESULTS)){
+  if (!is.null(COMPOUND1ROB_RESULTS_L[[JJJ]])){
+    lines(x=c(1,2),y=ROB_RESULTS[JJJ,c(10,9)], lwd=1.5, col="gray50")
+    points(x=c(1,2),y=ROB_RESULTS[JJJ,c(10,9)], pch=16, col=COLORS2[3])
+  }
+}
+boxplot(ROB_RESULTS[,c(10,9)], add = T,at = c(.7,2.3),boxwex=.3,varwidth = FALSE, col = COLORS2[3], lwd=2, axes=F)
+```
+
+We performed non-parametrical Mann-Whitney tests for each compound network to compare its robustness to sequences of removals following the two rules:
+
+
+```{r}
+knitr::kable(data.frame(networks=ids[compound],statistic=statistic[compound], pvalue=format(pvalue[compound],scientific = T)), format = "simple",row.names = F)
+```
+
+All networks were significantly more robust to sequences of removals that delay the exclusion of modules than to sequences of removals that hasten the exclusion of modules.
+
+
+## 9.1 Removal of consumer species
+
+We removed the consumer species (rows): animals in seed dispersal, pollination and plant-herbivore networks, and parasites in host-parasite networks.
+
+For all nested or compound networks, we measured robustness to consumer species removals (1) based on species degrees (more connected to less connected) and (2) randomly. For each network, we made 1000 random extinction sequences and calculated the average robustness.
+
+```{r, fig.height = 5, fig.width = 5}
+boxplot(ROB_RESULTS$rob_high_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees")
+```
+
+We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
+  
+```{r}
+wilcox.test(ROB_RESULTS$rob_high_deg[criterium3&ROB_RESULTS$topology=="nested"],ROB_RESULTS$rob_high_deg[criterium3&ROB_RESULTS$topology=="compound"])
+
+```
+We did not find statistically significant differences in the robustness of nested and compound networks to sequences of consumer species removals by decreasing degrees.
+
+
+```{r, fig.height = 5, fig.width = 5}
+boxplot(ROB_RESULTS$rob_high_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="mean robustness (1000 extinction sequences)", main="random removals")
+```
+
+We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
+
+```{r}
+wilcox.test(ROB_RESULTS$rob_high_ran[criterium3&ROB_RESULTS$topology=="nested"],ROB_RESULTS$rob_high_ran[criterium3&ROB_RESULTS$topology=="compound"])
+
+```
+
+Networks with compound topologies were significantly more robust to random removals of consumer species than nested networks.
+
+\
+
+For networks with compound topologies (n=45) we compared the robustness following two different rules for the sequences of species removals. For each network, using each rule, we made 1000 different sequences of extinctions.
+
+In the first rule, we maximally delay the exclusion of modules (removal of all species of the module). For this, in each round, the consumer species to be removed is randomly selected from the module or modules with more remaining resources.
+
+The second rule for species removals aims at hastening the exclusion of modules.Therefore, for each sequence of removals, we randomly define the order of modules to be tackled. All modules have the same chance of being selected in any position. Then, we proceed by removing species from the first defined module, until it is fully excluded, then we move to the next and so on.
+
+
+```{r, include=F}
+compound=criterium3&ROB_RESULTS$topology=="compound"
+statistic=numeric()
+pvalue=numeric()
+for (JJJ in 1:142){
+  if(!is.null(COMPOUND1ROB_RESULTS_H[[JJJ]])){
+    TESTE=wilcox.test(COMPOUND1ROB_RESULTS_H[[JJJ]],COMPOUND2ROB_RESULTS_H[[JJJ]])
+    statistic[JJJ]=TESTE$statistic
+    pvalue[JJJ]=TESTE$p.value
+  }
+}
+```
+
+```{r, fig.height = 5}
+plot(NA, ylim=c(0.5,1), xlim=c(.5,2.5), ylab="mean robustness (1000 extinction sequences)",xaxt='n', xlab=NA)
+Axis(side=1,at = c(1,2), labels = c("delaying module exclusions","hastening module exclusions"))
+for(JJJ in 1:nrow(ROB_RESULTS)){
+  if (!is.null(COMPOUND1ROB_RESULTS_H[[JJJ]])){
+    lines(x=c(1,2),y=ROB_RESULTS[JJJ,c(14,13)], lwd=1.5, col="gray50")
+    points(x=c(1,2),y=ROB_RESULTS[JJJ,c(14,13)], pch=16, col=COLORS2[3])
+  }
+}
+boxplot(ROB_RESULTS[,c(14,13)], add = T,at = c(.7,2.3),boxwex=.3,varwidth = FALSE, col = COLORS2[3], lwd=2, axes=F)
+```
+We performed non-parametrical Mann-Whitney tests for each compound network to compare its robustness to sequences of removals following the two rules:
+
+```{r}
+knitr::kable(data.frame(networks=ids[compound],statistic=statistic[compound], pvalue=format(pvalue[compound],scientific = T)), format = "simple",row.names = F)
+```
+
+All networks were significantly more robust to sequences of removals that delay the exclusion of modules than to sequences of removals that hasten the exclusion of modules.
+
 # 10. References
 
 D. P. Vázquez, et al., Species abundance and asymmetric interaction strength in ecological networks. Oikos 116, 1120–1127 (2007).
+
+E. Burgos, et al. Why nestedness in mutualistic networks? Journal of Theoretical Biology 249, 307–313 (2007). 
 
 M. Almeida-Neto, P. Guimarães, P. R. Guimarães, R. D. Loyola, W. Ulrich, A consistent metric for nestedness analysis in ecological systems: reconciling concept and measurement. Oikos 117, 1227–1239 (2008).
 
