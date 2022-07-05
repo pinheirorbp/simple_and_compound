@@ -31,7 +31,7 @@ MIN=0
 #source("aggregation_results_W.R")
 # Colors
 COLORS1=c(1,"#1E46D9","#F80631","#00D400","#FFA100","#7A05C5")
-COLORS2=c("#AF2E45","#BA9A31","#353082","#4EA02A")
+COLORS2=c("#AF2E45","#ffd143","#353082","#4EA02A")
 # binary result for comparison
 BINCODES=c("set1","set2","set3")
 BIN_NAME_OUTPUT=paste(BINCODES,collapse = "_")

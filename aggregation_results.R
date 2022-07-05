@@ -1,6 +1,8 @@
 # This script is called by the RMarkdown file ("binary.Rmd" in the folder "results"). 
 #However, they might be used separated. In this case, define the codes for the subsets for aggregation in an object CODES
 # CODES= c("set1","set2","set3")
+# MIN=0
+# NAME_OUTPUT=paste(CODES,collapse = "_")
 ### packages ####
 library(bipartite)
 library(stringr)
@@ -106,31 +108,31 @@ for (i in 1:L1){
     mean_prop_nullconnec_P[i]=mean(connec2, na.rm=T)
   }
 }
-### plot nested ####
-for (i in 1:L1){
-  par(mar=c(4.2,2,2,2))
-  png(filename = paste("plots/nest_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
-  plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested"), binary=T,xlab = names(NETS)[i])
-  if(!min_dim[i]){
-    mtext(paste("[Less than",MIN,"species in each dimension]"), side=1, line=1, col="red", cex=1)}
-  if(min_dim[i]&linkage_density[i]<1){
-    mtext("[Linkage density <1]", side=1, line=1, col="red", cex=1)
-  }
-  dev.off()
-  dev.off()
-}
-### plot compound topology ####
-ISMOD=MODsummary$modularity>MODsummary$prop_null_ci_up
-ISMOD[is.na(ISMOD)]=FALSE
-for (i in 1:L1){
-  if(ISMOD[i]&linkage_density[i]>=1&min_dim[i]){
-    par(mar=c(4.2,2,2,2))
-    png(filename = paste("plots/compound_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
-    plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = MODcomplete[[i]]$row_modules, col_partitions = MODcomplete[[i]]$col_modules,mod_similarity = T), binary=T,xlab = names(NETS)[i],border = T)
-    dev.off()
-    dev.off()
-  }
-}
+# ### plot nested ####
+# for (i in 1:L1){
+#   par(mar=c(4.2,2,2,2))
+#   png(filename = paste("plots/nest_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+#   plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested"), binary=T,xlab = names(NETS)[i])
+#   if(!min_dim[i]){
+#     mtext(paste("[Less than",MIN,"species in each dimension]"), side=1, line=1, col="red", cex=1)}
+#   if(min_dim[i]&linkage_density[i]<1){
+#     mtext("[Linkage density <1]", side=1, line=1, col="red", cex=1)
+#   }
+#   dev.off()
+#   dev.off()
+# }
+# ### plot compound topology ####
+# ISMOD=MODsummary$modularity>MODsummary$prop_null_ci_up
+# ISMOD[is.na(ISMOD)]=FALSE
+# for (i in 1:L1){
+#   if(ISMOD[i]&linkage_density[i]>=1&min_dim[i]){
+#     par(mar=c(4.2,2,2,2))
+#     png(filename = paste("plots/compound_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+#     plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = MODcomplete[[i]]$row_modules, col_partitions = MODcomplete[[i]]$col_modules,mod_similarity = T), binary=T,xlab = names(NETS)[i],border = T)
+#     dev.off()
+#     dev.off()
+#   }
+# }
 #####
 NETDATA=X
 TABLE_RESULTS=cbind(topology, topology_equi, topology_prop,rows=X$rows,cols=X$cols,nint=X$nint,connectance=X$connectance,interaction_type=X$Interaction, NODFsummary, MODsummary, COMPOUNDsummary, nodf_equi_sig, mod_equi_sig, nodf_equi_SM_sig, nodf_equi_DM_sig, nodf_prop_sig, mod_prop_sig, nodf_prop_SM_sig, nodf_prop_DM_sig,mean_equi_nullconnec,mean_equi_nullconnec_P,sd_equi_nullconnec, mean_prop_nullconnec, mean_prop_nullconnec_P,sd_prop_nullconnec)
@@ -238,31 +240,31 @@ if(L>1){
         mean_prop_nullconnec_P[i]=mean(connec2, na.rm=T)
       }
     }
-    ### plot nested ####
-    for (i in 1:L1){
-      par(mar=c(4.2,2,2,2))
-      png(filename = paste("plots/nest_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
-      plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested"), binary=T,xlab = names(NETS)[i])
-      if(!min_dim[i]){
-        mtext(paste("Less than",MIN,"species in each dimension"), side=1, line=1, col="red", cex=.5)}
-      if(min_dim[i]&linkage_density[i]<1){
-        mtext("Linkage density <1", side=1, line=1, col="red", cex=.5)
-      }
-      dev.off()
-      dev.off()
-    }
-    ### plot compound topology ####
-    ISMOD=(MODsummary$modularity>MODsummary$prop_null_ci_up)
-    ISMOD[is.na(ISMOD)]=FALSE
-    for (i in 1:L1){
-      if(ISMOD[i]&linkage_density[i]>=1&min_dim[i]){
-        par(mar=c(4.2,2,2,2))
-        png(filename = paste("plots/compound_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
-        plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = MODcomplete[[i]]$row_modules, col_partitions = MODcomplete[[i]]$col_modules,mod_similarity = T), binary=T,xlab = names(NETS)[i],border = T)
-        dev.off()
-        dev.off()
-      }
-    }
+    # ### plot nested ####
+    # for (i in 1:L1){
+    #   par(mar=c(4.2,2,2,2))
+    #   png(filename = paste("plots/nest_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+    #   plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "nested"), binary=T,xlab = names(NETS)[i])
+    #   if(!min_dim[i]){
+    #     mtext(paste("Less than",MIN,"species in each dimension"), side=1, line=1, col="red", cex=.5)}
+    #   if(min_dim[i]&linkage_density[i]<1){
+    #     mtext("Linkage density <1", side=1, line=1, col="red", cex=.5)
+    #   }
+    #   dev.off()
+    #   dev.off()
+    # }
+    # ### plot compound topology ####
+    # ISMOD=(MODsummary$modularity>MODsummary$prop_null_ci_up)
+    # ISMOD[is.na(ISMOD)]=FALSE
+    # for (i in 1:L1){
+    #   if(ISMOD[i]&linkage_density[i]>=1&min_dim[i]){
+    #     par(mar=c(4.2,2,2,2))
+    #     png(filename = paste("plots/compound_matrix/binary/",ids[i],".png",sep = ""),width = 14, height = nrow(NETS[[i]])/ncol(NETS[[i]])*10+6.2, units = "cm", res=300)
+    #     plotmatrix(sortmatrix(as.matrix(NETS[[i]]),topology = "compound",row_partitions = MODcomplete[[i]]$row_modules, col_partitions = MODcomplete[[i]]$col_modules,mod_similarity = T), binary=T,xlab = names(NETS)[i],border = T)
+    #     dev.off()
+    #     dev.off()
+    #   }
+    # }
     # binding tables
     TAB1=cbind(topology, topology_equi, topology_prop,rows=X$rows,cols=X$cols,nint=X$nint,connectance=X$connectance,interaction_type=X$Interaction, NODFsummary, MODsummary, COMPOUNDsummary, nodf_equi_sig, mod_equi_sig, nodf_equi_SM_sig, nodf_equi_DM_sig, nodf_prop_sig, mod_prop_sig, nodf_prop_SM_sig, nodf_prop_DM_sig,mean_equi_nullconnec,mean_equi_nullconnec_P,sd_equi_nullconnec, mean_prop_nullconnec, mean_prop_nullconnec_P,sd_prop_nullconnec)
     rm(MODcomplete,MODsummary,NODFcomplete,NODFsummary,COMPOUNDsummary)
@@ -272,4 +274,17 @@ if(L>1){
   }}
 write.table(TABLE_RESULTS,file =paste("results/",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
 write.table(NETDATA,file =paste("results/","NETDATA_",NAME_OUTPUT,".txt",sep=""),sep = "\t",row.names = T)
+###
+MODULES=list()
+for (ll1 in 1:L){
+  load(paste("files/modularity_",CODES[ll1],".RData",sep=""))
+  nn1=length(MODULES)
+  for (ll2 in 1:length(MODcomplete)){
+    MODULES[[nn1+ll2]]=list(
+      rows=MODcomplete[[ll2]]$row_modules,
+      cols=MODcomplete[[ll2]]$col_modules)
+    names(MODULES)[nn1+ll2]=names(MODcomplete)[ll2]
+  }}
+save(MODULES,file =paste("results/MODULES_",NAME_OUTPUT,".RData",sep=""))
+##
 rm(list = as.character(ls())[!is.element(as.character(ls()),c("CODES","NAME_OUTPUT","MIN"))])
