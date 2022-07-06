@@ -432,7 +432,7 @@ We removed the resource species (rows): plants in seed dispersal, pollination an
 For all nested or compound networks, we measured robustness to resource species removals (1) based on species degrees (more connected to less connected) and (2) randomly. For each network, we made 1000 random extinction sequences and calculated the average robustness.
 
 ```{r, fig.height = 5, fig.width = 5}
-boxplot(ROB_RESULTS$rob_low_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees")
+boxplot(ROB_RESULTS$rob_low_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees", ylim=c(0,1))
 ```
 
 We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
@@ -445,7 +445,7 @@ wilcox.test(ROB_RESULTS$rob_low_deg[criterium3&ROB_RESULTS$topology=="nested"],R
 Nested networks were significantly more robust to removals of resource species following decreasing degrees than networks with compound topologies.
 
 ```{r, fig.height = 5, fig.width = 5}
-boxplot(ROB_RESULTS$rob_low_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="average robustness (1000 extinction sequences)", main="random removals")
+boxplot(ROB_RESULTS$rob_low_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="average robustness (1000 extinction sequences)", main="random removals",ylim=c(0,1))
 ```
 
 We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
@@ -530,7 +530,7 @@ We removed the consumer species (rows): animals in seed dispersal, pollination a
 For all nested or compound networks, we measured robustness to consumer species removals (1) based on species degrees (more connected to less connected) and (2) randomly. For each network, we made 1000 random extinction sequences and calculated the average robustness.
 
 ```{r, fig.height = 5, fig.width = 5}
-boxplot(ROB_RESULTS$rob_high_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees")
+boxplot(ROB_RESULTS$rob_high_deg[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="robustness", main="removals by degrees", ylim=c(0,1))
 ```
 
 We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
@@ -543,7 +543,7 @@ We did not find statistically significant differences in the robustness of neste
 
 
 ```{r, fig.height = 5, fig.width = 5}
-boxplot(ROB_RESULTS$rob_high_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="mean robustness (1000 extinction sequences)", main="random removals")
+boxplot(ROB_RESULTS$rob_high_ran[criterium3]~ROB_RESULTS$topology[criterium3], col=COLORS2[c(3,1)], xlab="topology", ylab="mean robustness (1000 extinction sequences)", main="random removals", ylim=c(0,1))
 ```
 
 We performed a non-parametrical Mann-Whitney test to compare the robustness of nested and compound binary networks:
