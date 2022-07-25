@@ -189,13 +189,13 @@ for (T in 1:L){
 }
 rm(WNODAcomplete,WNODAsummary,T)
 # loop for modularity analysis
-for (i in c(11,15)){ #c(1:10,12,14,17:L) #c(13,16) #c(11,15)(LPA)
+for (i in 1:L){ 
   print(Sys.time())
   print(paste(ids[i], "Network", i, "in", L))
   # observed modularity
   WMODcomplete[[i]]=list()
-  #WMOD=LPA_wb_plus(as.matrix(NETS[[ids[i]]])) # LPA
-  WMOD=DIRT_LPA_wb_plus(as.matrix(NETS[[ids[i]]])) # DIRT LPA
+  if((X$rows[i]+X$cols[i])>=600){MOD=LPA_wb_plus(as.matrix(NETS[[ids[i]]]))}
+  if((X$rows[i]+X$cols[i])<600){MOD=DIRT_LPA_wb_plus(as.matrix(NETS[[ids[i]]]))}
   WMODcomplete[[i]]$modularity=WMODsummary$modularity[i]=WMOD$modularity
   # observed number of modules
   row_modules=WMOD$Row_labels
@@ -214,8 +214,10 @@ for (i in c(11,15)){ #c(1:10,12,14,17:L) #c(13,16) #c(11,15)(LPA)
     equi_nulls_N=equi_nulls[((j-1)*N+1):(j*N)] # N equinulls to run in each core
     N_nulls=list()
     for(nn in 1:N){
-      #N_nulls[[nn]]=LPA_wb_plus(equi_nulls_N[[nn]]) # LPA
-      N_nulls[[nn]]=DIRT_LPA_wb_plus(equi_nulls_N[[nn]]) # DIRT LPA
+      if((X$rows[i]+X$cols[i])>=600){
+        N_nulls[[nn]]=LPA_wb_plus(equi_nulls_N[[nn]]$NullMatrix)}
+      if((X$rows[i]+X$cols[i])<600){
+        N_nulls[[nn]]=DIRT_LPA_wb_plus(equi_nulls_N[[nn]]$NullMatrix)}
       if((j%%N)==nn){print(paste(i,"    ",ids[i], "   mod_equi_null:",nn," in N: ",N,"   ",Sys.time(),sep=""))}
     }
     N_nulls
@@ -234,8 +236,10 @@ for (i in c(11,15)){ #c(1:10,12,14,17:L) #c(13,16) #c(11,15)(LPA)
     prop_nulls_N=prop_nulls[((j-1)*N+1):(j*N)] # N propnulls to run in each core
     N_nulls=list()
     for(nn in 1:N){
-      #N_nulls[[nn]]=LPA_wb_plus(prop_nulls_N[[nn]]) # LPA
-      N_nulls[[nn]]=DIRT_LPA_wb_plus(prop_nulls_N[[nn]]) # DIRT LPA
+      if((X$rows[i]+X$cols[i])>=600){
+        N_nulls[[nn]]=LPA_wb_plus(prop_nulls_N[[nn]]$NullMatrix)}
+      if((X$rows[i]+X$cols[i])<600){
+        N_nulls[[nn]]=DIRT_LPA_wb_plus(prop_nulls_N[[nn]]$NullMatrix)}
       if((j%%N)==nn){print(paste(i,"    ",ids[i], "   mod_prop_null:",nn," in N: ",N,"   ",Sys.time(),sep=""))}
     }
     N_nulls
